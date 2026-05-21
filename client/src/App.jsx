@@ -16,6 +16,9 @@ export default function App() {
   // Injected prompts from CodeRunner -> ChatWindow
   const [injectedPrompt, setInjectedPrompt] = useState(null);
 
+  // Code loaded from chat -> editor
+  const [pendingCode, setPendingCode] = useState(null);
+
   // Problem loaded into editor
   const [loadedProblem, setLoadedProblem] = useState(null);
 
@@ -32,6 +35,11 @@ export default function App() {
   function handleLoadProblem(problem) {
     setLoadedProblem(problem);
     setShowProblems(false);
+  }
+
+  // Called when user clicks "Load to Editor" on a code block in chat
+  function handleLoadCode(code, language) {
+    setPendingCode({ code, language });
   }
 
   return (
@@ -97,6 +105,7 @@ export default function App() {
             lang={lang}
             injectedPrompt={injectedPrompt}
             onInjectedHandled={() => setInjectedPrompt(null)}
+            onLoadCode={handleLoadCode}
           />
         </div>
         <div className="min-h-0 h-full overflow-hidden">
@@ -106,6 +115,8 @@ export default function App() {
             onFix={handleFix}
             loadedProblem={loadedProblem}
             onProblemLoaded={() => setLoadedProblem(null)}
+            pendingCode={pendingCode}
+            onCodeLoaded={() => setPendingCode(null)}
           />
         </div>
       </main>

@@ -68,7 +68,7 @@ function defaultExt(lang) {
   return map[lang] || "txt";
 }
 
-export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem, onProblemLoaded }) {
+export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem, onProblemLoaded, pendingCode, onCodeLoaded }) {
   const [language, setLanguage] = useState("python");
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState("*");
@@ -130,6 +130,30 @@ export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem,
       onProblemLoaded?.();
     }
   }, [loadedProblem]);
+
+  // Handle code loaded from chat (Load to Editor button)
+  useEffect(() => {
+    if (pendingCode && pendingCode.code) {
+      const cLang = pendingCode.language || language;
+      setLanguage(cLang);
+      const ext = defaultExt(cLang);
+      setFiles((prev) => {
+        const newName = `main.${ext}`;
+        if (prev.length === 0) return [{ name: newName, content: pendingCode.code }];
+        const updated = [...prev];
+        updated[0] = {
+          name: prev[0].name.includes(`.${ext}`) ? prev[0].name : newName,
+          content: pendingCode.code,
+        };
+        return updated;
+      });
+      setActiveFileIdx(0);
+      setOutput("");
+      setMetrics(null);
+      onCodeLoaded?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCode]);
 
   const langVersions = versions.filter((v) => v.language === language);
   const activeFile = files[activeFileIdx] || files[0];

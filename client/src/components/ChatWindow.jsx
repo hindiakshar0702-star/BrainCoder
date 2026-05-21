@@ -10,6 +10,7 @@ export default function ChatWindow({
   lang,
   injectedPrompt,
   onInjectedHandled,
+  onLoadCode,
 }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -119,7 +120,7 @@ export default function ChatWindow({
         )}
         {messages.map((m, i) => (
           <div key={i}>
-            <MessageBubble role={m.role} content={m.content} />
+            <MessageBubble role={m.role} content={m.content} onLoadCode={onLoadCode} />
             {/* Read aloud button on AI messages */}
             {m.role === "assistant" && (
               <div className="flex justify-start mt-1 ml-1">
