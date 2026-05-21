@@ -3,16 +3,21 @@ import SubjectSelector from "./components/SubjectSelector.jsx";
 import LevelSelector from "./components/LevelSelector.jsx";
 import LanguageSelector from "./components/LanguageSelector.jsx";
 import ChatWindow from "./components/ChatWindow.jsx";
-import CodeRunner from "./components/CodeRunner.jsx";
+import MultiFileEditor from "./components/MultiFileEditor.jsx";
+import PracticeProblems from "./components/PracticeProblems.jsx";
 import { t } from "./lib/i18n.js";
 
 export default function App() {
   const [subject, setSubject] = useState("coding");
   const [level, setLevel] = useState("beginner");
   const [lang, setLang] = useState("en");
+  const [showProblems, setShowProblems] = useState(false);
 
   // Injected prompts from CodeRunner -> ChatWindow
   const [injectedPrompt, setInjectedPrompt] = useState(null);
+
+  // Problem loaded into editor
+  const [loadedProblem, setLoadedProblem] = useState(null);
 
   function handleExplain(code, language) {
     const prompt = `Please explain this ${language} code step by step:\n\n\`\`\`${language}\n${code}\n\`\`\``;
@@ -22,6 +27,11 @@ export default function App() {
   function handleFix(code, language, errorOutput) {
     const prompt = `I have this ${language} code that produces an error. Please fix it and explain what was wrong.\n\n**Code:**\n\`\`\`${language}\n${code}\n\`\`\`\n\n**Error/Output:**\n\`\`\`\n${errorOutput}\n\`\`\``;
     setInjectedPrompt(prompt);
+  }
+
+  function handleLoadProblem(problem) {
+    setLoadedProblem(problem);
+    setShowProblems(false);
   }
 
   return (
@@ -51,9 +61,32 @@ export default function App() {
             <div className="min-w-[180px]">
               <LanguageSelector value={lang} onChange={setLang} />
             </div>
+            {/* Practice Problems toggle */}
+            <button
+              onClick={() => setShowProblems(!showProblems)}
+              className={`px-3 py-2 rounded-lg border text-sm transition ${
+                showProblems
+                  ? "bg-cyan-600 border-cyan-500 text-white"
+                  : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+              }`}
+            >
+              📚 Practice
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Practice Problems Panel (collapsible) */}
+      {showProblems && (
+        <div className="border-b border-slate-800 bg-slate-950/80">
+          <PracticeProblems
+            subject={subject}
+            level={level}
+            lang={lang}
+            onLoadProblem={handleLoadProblem}
+          />
+        </div>
+      )}
 
       {/* Main split: chat (left) + code runner (right) */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 min-h-0">
@@ -64,10 +97,12 @@ export default function App() {
           injectedPrompt={injectedPrompt}
           onInjectedHandled={() => setInjectedPrompt(null)}
         />
-        <CodeRunner
+        <MultiFileEditor
           lang={lang}
           onExplain={handleExplain}
           onFix={handleFix}
+          loadedProblem={loadedProblem}
+          onProblemLoaded={() => setLoadedProblem(null)}
         />
       </main>
     </div>

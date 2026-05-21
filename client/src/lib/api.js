@@ -19,11 +19,16 @@ export async function runCode({
   code,
   stdin = "",
   args = [],
+  files,
 }) {
+  const body = { language, version, code, stdin, args };
+  if (files && files.length > 0) {
+    body.files = files;
+  }
   const res = await fetch("/api/run", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ language, version, code, stdin, args }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const { error } = await res.json().catch(() => ({}));

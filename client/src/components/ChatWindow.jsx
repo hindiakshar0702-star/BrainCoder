@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import MessageBubble from "./MessageBubble.jsx";
+import VoiceButton, { speakText, stopSpeaking } from "./VoiceButton.jsx";
 import { sendChat } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
 
@@ -14,6 +15,7 @@ export default function ChatWindow({
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [speaking, setSpeaking] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -58,6 +60,29 @@ export default function ChatWindow({
   function clearChat() {
     setMessages([]);
     setError("");
+    stopSpeaking();
+    setSpeaking(false);
+  }
+
+  function handleSpeak(text) {
+    if (speaking) {
+      stopSpeaking();
+      setSpeaking(false);
+    } else {
+      speakText(text, lang);
+      setSpeaking(true);
+      // Reset speaking state when done
+      const checkDone = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          setSpeaking(false);
+          clearInterval(checkDone);
+        }
+      }, 500);
+    }
+  }
+
+  function handleVoiceTranscript(transcript) {
+    setInput(transcript);
   }
 
   const examplePrompt = t(lang, `examples.${subject}`);
@@ -93,7 +118,21 @@ export default function ChatWindow({
           </div>
         )}
         {messages.map((m, i) => (
-          <MessageBubble key={i} role={m.role} content={m.content} />
+          <div key={i}>
+            <MessageBubble role={m.role} content={m.content} />
+            {/* Read aloud button on AI messages */}
+            {m.role === "assistant" && (
+              <div className="flex justify-start mt-1 ml-1">
+                <button
+                  onClick={() => handleSpeak(m.content)}
+                  className="text-xs text-slate-500 hover:text-slate-300 px-2 py-0.5 rounded hover:bg-slate-800 transition"
+                  title="Read aloud"
+                >
+                  🔊 Read aloud
+                </button>
+              </div>
+            )}
+          </div>
         ))}
         {busy && (
           <div className="text-slate-400 text-sm italic deva">
@@ -114,6 +153,7 @@ export default function ChatWindow({
         }}
         className="flex gap-2 p-3 border-t border-slate-800"
       >
+        <VoiceButton lang={lang} onTranscript={handleVoiceTranscript} />
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
