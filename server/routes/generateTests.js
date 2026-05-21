@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { callGeminiWithFallback } from "../lib/gemini.js";
 
 const router = Router();
 
@@ -14,14 +14,6 @@ router.post("/", async (req, res) => {
     if (!code.trim()) {
       return res.status(400).json({ error: "code is required" });
     }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        responseMimeType: "application/json",
-      },
-    });
 
     const prompt = `You are a strict autograder.
 Given the following ${language} program, generate exactly ${count} test cases.
@@ -41,8 +33,12 @@ Program:
 ${code}
 \`\`\``;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const result = await callGeminiWithFallback({
+      apiKey: process.env.GEMINI_API_KEY,
+      generationConfig: { responseMimeType: "application/json" },
+      run: (model) => model.generateContent(prompt),
+    });
+    const text = result.result.response.text();
 
     let parsed;
     try {
@@ -57,7 +53,11 @@ ${code}
     res.json({ tests });
   } catch (err) {
     console.error("[/api/generate-tests] error:", err);
-    res.status(500).json({ error: err.message || "Internal server error" });
+    res.status(503).json({
+      error:
+        err.message ||
+        "AI service is temporarily unavailable. Please try again in a moment.",
+    });
   }
 });
 
