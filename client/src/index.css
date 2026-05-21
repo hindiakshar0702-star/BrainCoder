@@ -17,37 +17,183 @@ body {
 
 /* Devanagari-friendly text everywhere it's needed */
 .deva {
-  font-family: "Noto Sans Devanagari", system-ui, sans-serif;
+  font-family: "Noto Sans Devanagari", "Inter", system-ui, sans-serif;
 }
 
-/* Markdown styling */
-.prose-chat pre {
-  background: #0b1220;
-  border: 1px solid #1e293b;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  overflow-x: auto;
+/* ---------- Chat markdown styling ---------- */
+
+.prose-chat {
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
-.prose-chat code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9em;
+
+.prose-chat > *:first-child {
+  margin-top: 0;
 }
-.prose-chat p :not(pre) > code {
-  background: #1e293b;
-  padding: 0.1rem 0.3rem;
-  border-radius: 0.25rem;
+.prose-chat > *:last-child {
+  margin-bottom: 0;
 }
+
+/* Headings */
 .prose-chat h1,
 .prose-chat h2,
-.prose-chat h3 {
+.prose-chat h3,
+.prose-chat h4 {
   font-weight: 600;
-  margin: 0.6rem 0 0.3rem;
+  margin: 0.8rem 0 0.4rem;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
 }
+.prose-chat h1 { font-size: 1.25rem; }
+.prose-chat h2 { font-size: 1.1rem; }
+.prose-chat h3 { font-size: 1rem; }
+.prose-chat h4 { font-size: 0.95rem; color: #cbd5e1; }
+
+/* Paragraphs */
+.prose-chat p {
+  margin: 0.4rem 0;
+}
+
+/* Strong / em */
+.prose-chat strong {
+  color: #f8fafc;
+  font-weight: 600;
+}
+.prose-chat em {
+  color: #e2e8f0;
+}
+
+/* Lists */
 .prose-chat ul,
 .prose-chat ol {
-  margin-left: 1.25rem;
-  list-style: disc;
+  margin: 0.4rem 0 0.4rem 1.4rem;
+  padding-left: 0;
 }
-.prose-chat ol {
-  list-style: decimal;
+.prose-chat ul { list-style: disc; }
+.prose-chat ol { list-style: decimal; }
+.prose-chat li {
+  margin: 0.15rem 0;
+  padding-left: 0.25rem;
+}
+.prose-chat li::marker {
+  color: #64748b;
+}
+.prose-chat li > p {
+  margin: 0.1rem 0;
+}
+
+/* Inline code */
+.prose-chat :not(pre) > code {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: #1e293b;
+  color: #fbbf24;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  border: 1px solid #334155;
+}
+
+/* Code blocks (with hljs syntax highlighting) */
+.prose-chat pre {
+  background: #0b1220 !important;
+  border: 1px solid #1e293b;
+  border-radius: 0 0 0.5rem 0.5rem;
+  padding: 0.85rem 1rem !important;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.prose-chat pre code,
+.prose-chat pre code.hljs {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: transparent !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: inherit !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+}
+
+/* Blockquotes */
+.prose-chat blockquote {
+  border-left: 3px solid #6366f1;
+  background: rgba(99, 102, 241, 0.06);
+  padding: 0.4rem 0.8rem;
+  margin: 0.6rem 0;
+  border-radius: 0 0.4rem 0.4rem 0;
+  color: #cbd5e1;
+  font-style: italic;
+}
+.prose-chat blockquote p {
+  margin: 0.2rem 0;
+}
+
+/* Links */
+.prose-chat a {
+  color: #818cf8;
+  text-decoration: underline;
+  text-decoration-color: #4f46e5;
+  text-underline-offset: 2px;
+}
+.prose-chat a:hover {
+  color: #a5b4fc;
+}
+
+/* Tables */
+.prose-chat table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+.prose-chat th,
+.prose-chat td {
+  border: 1px solid #1e293b;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+.prose-chat th {
+  background: #1e293b;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+.prose-chat tr:nth-child(even) {
+  background: rgba(30, 41, 59, 0.3);
+}
+
+/* HR */
+.prose-chat hr {
+  border: 0;
+  border-top: 1px solid #1e293b;
+  margin: 0.8rem 0;
+}
+
+/* KaTeX equations: nicer in dark theme */
+.prose-chat .katex {
+  font-size: 1.05em;
+}
+.prose-chat .katex-display {
+  margin: 0.6rem 0;
+  padding: 0.4rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* User bubble: invert link color a bit */
+.bg-indigo-600 .prose-chat a {
+  color: #ddd6fe;
+  text-decoration-color: #c7d2fe;
+}
+.bg-indigo-600 .prose-chat strong {
+  color: #fff;
+}
+.bg-indigo-600 .prose-chat :not(pre) > code {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fef3c7;
 }

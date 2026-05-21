@@ -5,8 +5,9 @@ export default {
     extend: {
       fontFamily: {
         deva: ["Noto Sans Devanagari", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 };

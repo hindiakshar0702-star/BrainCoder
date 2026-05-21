@@ -4,6 +4,37 @@ import VoiceButton, { speakText, stopSpeaking } from "./VoiceButton.jsx";
 import { sendChat } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
 
+// Map markdown language tags to internal language names
+const LANG_NORMALIZE = {
+  cpp: "c++", "c++": "c++", cxx: "c++", cc: "c++", c: "c",
+  py: "python", python: "python", python3: "python",
+  js: "javascript", javascript: "javascript", node: "javascript",
+  ts: "typescript", typescript: "typescript",
+  java: "java", go: "go", golang: "go",
+  rs: "rust", rust: "rust",
+  rb: "ruby", ruby: "ruby",
+  cs: "csharp", csharp: "csharp", "c#": "csharp",
+  php: "php", kt: "kotlin", kotlin: "kotlin", swift: "swift",
+  bash: "bash", sh: "bash", shell: "bash", zsh: "bash",
+  lua: "lua", r: "r", haskell: "haskell", hs: "haskell",
+  perl: "perl", pl: "perl", scala: "scala", dart: "dart",
+};
+
+/**
+ * Pull the first fenced code block (with a language tag) from a markdown string.
+ * Returns { code, language } or null if none.
+ */
+function extractFirstCodeBlock(markdown) {
+  if (!markdown) return null;
+  const re = /```([\w+#-]+)?\s*\n([\s\S]*?)\n```/;
+  const match = markdown.match(re);
+  if (!match) return null;
+  const rawLang = (match[1] || "").toLowerCase();
+  const code = match[2];
+  const language = LANG_NORMALIZE[rawLang] || rawLang || "python";
+  return { code, language };
+}
+
 export default function ChatWindow({
   subject,
   level,
@@ -53,6 +84,12 @@ export default function ChatWindow({
         codeLang,
       });
       setMessages([...next, { role: "assistant", content: reply }]);
+
+      // 🚀 Auto-load: extract first code block from reply and send it to the editor
+      const block = extractFirstCodeBlock(reply);
+      if (block && onLoadCode) {
+        onLoadCode(block.code, block.language);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -74,7 +111,6 @@ export default function ChatWindow({
     } else {
       speakText(text, lang);
       setSpeaking(true);
-      // Reset speaking state when done
       const checkDone = setInterval(() => {
         if (!window.speechSynthesis.speaking) {
           setSpeaking(false);
@@ -122,7 +158,7 @@ export default function ChatWindow({
         )}
         {messages.map((m, i) => (
           <div key={i}>
-            <MessageBubble role={m.role} content={m.content} onLoadCode={onLoadCode} />
+            <MessageBubble role={m.role} content={m.content} />
             {/* Read aloud button on AI messages */}
             {m.role === "assistant" && (
               <div className="flex justify-start mt-1 ml-1">
