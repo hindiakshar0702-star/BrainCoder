@@ -11,6 +11,19 @@ export default function App() {
   const [level, setLevel] = useState("beginner");
   const [lang, setLang] = useState("en");
 
+  // Injected prompts from CodeRunner -> ChatWindow
+  const [injectedPrompt, setInjectedPrompt] = useState(null);
+
+  function handleExplain(code, language) {
+    const prompt = `Please explain this ${language} code step by step:\n\n\`\`\`${language}\n${code}\n\`\`\``;
+    setInjectedPrompt(prompt);
+  }
+
+  function handleFix(code, language, errorOutput) {
+    const prompt = `I have this ${language} code that produces an error. Please fix it and explain what was wrong.\n\n**Code:**\n\`\`\`${language}\n${code}\n\`\`\`\n\n**Error/Output:**\n\`\`\`\n${errorOutput}\n\`\`\``;
+    setInjectedPrompt(prompt);
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -44,8 +57,18 @@ export default function App() {
 
       {/* Main split: chat (left) + code runner (right) */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 min-h-0">
-        <ChatWindow subject={subject} level={level} lang={lang} />
-        <CodeRunner lang={lang} />
+        <ChatWindow
+          subject={subject}
+          level={level}
+          lang={lang}
+          injectedPrompt={injectedPrompt}
+          onInjectedHandled={() => setInjectedPrompt(null)}
+        />
+        <CodeRunner
+          lang={lang}
+          onExplain={handleExplain}
+          onFix={handleFix}
+        />
       </main>
     </div>
   );

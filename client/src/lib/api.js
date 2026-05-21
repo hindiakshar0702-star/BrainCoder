@@ -13,15 +13,44 @@ export async function sendChat({ messages, subject, level, language }) {
   return res.json(); // { reply }
 }
 
-export async function runCode({ language, code, stdin = "" }) {
+export async function runCode({
+  language,
+  version = "*",
+  code,
+  stdin = "",
+  args = [],
+}) {
   const res = await fetch("/api/run", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ language, code, stdin }),
+    body: JSON.stringify({ language, version, code, stdin, args }),
   });
   if (!res.ok) {
     const { error } = await res.json().catch(() => ({}));
     throw new Error(error || `Run failed (${res.status})`);
   }
-  return res.json(); // { stdout, stderr, output, exitCode }
+  return res.json();
+  // { stdout, stderr, output, exitCode, signal, compile, language, version, networkMs }
+}
+
+export async function getRuntimes() {
+  const res = await fetch("/api/runtimes");
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({}));
+    throw new Error(error || `Runtimes fetch failed (${res.status})`);
+  }
+  return res.json(); // { runtimes: [...], cached }
+}
+
+export async function generateTests({ language, code, count = 4 }) {
+  const res = await fetch("/api/generate-tests", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ language, code, count }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({}));
+    throw new Error(error || `Generate tests failed (${res.status})`);
+  }
+  return res.json(); // { tests: [{ stdin, expected, description }] }
 }

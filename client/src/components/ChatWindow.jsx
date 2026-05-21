@@ -3,7 +3,13 @@ import MessageBubble from "./MessageBubble.jsx";
 import { sendChat } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
 
-export default function ChatWindow({ subject, level, lang }) {
+export default function ChatWindow({
+  subject,
+  level,
+  lang,
+  injectedPrompt,
+  onInjectedHandled,
+}) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -16,6 +22,15 @@ export default function ChatWindow({ subject, level, lang }) {
       behavior: "smooth",
     });
   }, [messages, busy]);
+
+  // Handle injected prompts from CodeRunner (Explain / Fix)
+  useEffect(() => {
+    if (injectedPrompt) {
+      send(injectedPrompt);
+      onInjectedHandled?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [injectedPrompt]);
 
   async function send(text) {
     const content = (text ?? input).trim();

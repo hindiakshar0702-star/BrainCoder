@@ -4,42 +4,37 @@ const router = Router();
 
 const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
 
-// Map our editor language ids -> Piston language names.
-const LANG_MAP = {
-  python: "python",
-  javascript: "javascript",
-  typescript: "typescript",
-  java: "java",
-  c: "c",
-  cpp: "c++",
-  csharp: "csharp",
-  go: "go",
-  rust: "rust",
-  ruby: "ruby",
-  php: "php",
-  kotlin: "kotlin",
-  swift: "swift",
-  r: "rscript",
-  bash: "bash",
-  lua: "lua",
-  sql: "sqlite3",
-};
-
 router.post("/", async (req, res) => {
   try {
-    const { language = "python", code = "", stdin = "" } = req.body;
-    const piston = LANG_MAP[language] || language;
+    const {
+      language = "python",
+      version = "*",
+      code = "",
+      stdin = "",
+      args = [],
+      files,
+    } = req.body;
 
+    // Default: single-file submission with `code`.
+    // Optional: caller may pass `files: [{name, content}, ...]` for multi-file.
+    const payloadFiles =
+      Array.isArray(files) && files.length > 0
+        ? files
+        : [{ content: code }];
+
+    const start = Date.now();
     const r = await fetch(PISTON_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        language: piston,
-        version: "*",
-        files: [{ content: code }],
+        language,
+        version,
+        files: payloadFiles,
         stdin,
+        args,
       }),
     });
+    const networkMs = Date.now() - start;
 
     if (!r.ok) {
       const text = await r.text();
@@ -52,8 +47,17 @@ router.post("/", async (req, res) => {
       stderr: data.run?.stderr ?? "",
       output: data.run?.output ?? "",
       exitCode: data.run?.code ?? null,
+      signal: data.run?.signal ?? null,
+      compile: data.compile
+        ? {
+            stdout: data.compile.stdout ?? "",
+            stderr: data.compile.stderr ?? "",
+            code: data.compile.code ?? null,
+          }
+        : null,
       language: data.language,
       version: data.version,
+      networkMs,
     });
   } catch (err) {
     console.error("[/api/run] error:", err);
