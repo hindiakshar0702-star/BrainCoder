@@ -1,14 +1,81 @@
 import { useEffect, useRef, useState } from "react";
 import MessageBubble from "./MessageBubble.jsx";
+import VoiceButton, { speakText, stopSpeaking } from "./VoiceButton.jsx";
 import { sendChat } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
+import { useSettings, CHAT_FONT_PX } from "../lib/settings.jsx";
 
-export default function ChatWindow({ subject, level, lang }) {
-  const [messages, setMessages] = useState([]);
+const HISTORY_KEY = "braincoder.chatHistory";
+
+const LANG_NORMALIZE = {
+  cpp: "c++", "c++": "c++", cxx: "c++", cc: "c++", c: "c",
+  py: "python", python: "python", python3: "python",
+  js: "javascript", javascript: "javascript", node: "javascript",
+  ts: "typescript", typescript: "typescript",
+  java: "java", go: "go", golang: "go",
+  rs: "rust", rust: "rust",
+  rb: "ruby", ruby: "ruby",
+  cs: "csharp", csharp: "csharp", "c#": "csharp",
+  php: "php", kt: "kotlin", kotlin: "kotlin", swift: "swift",
+  bash: "bash", sh: "bash", shell: "bash", zsh: "bash",
+  lua: "lua", r: "r", haskell: "haskell", hs: "haskell",
+  perl: "perl", pl: "perl", scala: "scala", dart: "dart",
+};
+
+function extractFirstCodeBlock(markdown) {
+  if (!markdown) return null;
+  const re = /```([\w+#-]+)?\s*\n([\s\S]*?)\n```/;
+  const match = markdown.match(re);
+  if (!match) return null;
+  const rawLang = (match[1] || "").toLowerCase();
+  const code = match[2];
+  const language = LANG_NORMALIZE[rawLang] || rawLang || "python";
+  return { code, language };
+}
+
+export default function ChatWindow({
+  subject,
+  level,
+  lang,
+  codeLang,
+  injectedPrompt,
+  onInjectedHandled,
+  onLoadCode,
+}) {
+  const { settings } = useSettings();
+
+  // Load saved history on mount if enabled
+  const [messages, setMessages] = useState(() => {
+    if (!settings.saveHistory) return [];
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [speaking, setSpeaking] = useState(false);
   const scrollRef = useRef(null);
+
+  // Persist messages whenever they change (if enabled)
+  useEffect(() => {
+    if (!settings.saveHistory) return;
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(messages));
+    } catch {}
+  }, [messages, settings.saveHistory]);
+
+  // If user disables saveHistory in settings, wipe stored history
+  useEffect(() => {
+    if (!settings.saveHistory) {
+      try {
+        localStorage.removeItem(HISTORY_KEY);
+      } catch {}
+    }
+  }, [settings.saveHistory]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -16,6 +83,14 @@ export default function ChatWindow({ subject, level, lang }) {
       behavior: "smooth",
     });
   }, [messages, busy]);
+
+  useEffect(() => {
+    if (injectedPrompt) {
+      send(injectedPrompt);
+      onInjectedHandled?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [injectedPrompt]);
 
   async function send(text) {
     const content = (text ?? input).trim();
@@ -31,8 +106,18 @@ export default function ChatWindow({ subject, level, lang }) {
         subject,
         level,
         language: lang,
+        codeLang,
+        userApiKey: settings.userApiKey,
       });
       setMessages([...next, { role: "assistant", content: reply }]);
+
+      // Auto-load first code block to editor (if enabled)
+      if (settings.autoLoadCode) {
+        const block = extractFirstCodeBlock(reply);
+        if (block && onLoadCode) {
+          onLoadCode(block.code, block.language);
+        }
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -43,13 +128,39 @@ export default function ChatWindow({ subject, level, lang }) {
   function clearChat() {
     setMessages([]);
     setError("");
+    stopSpeaking();
+    setSpeaking(false);
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+    } catch {}
+  }
+
+  function handleSpeak(text) {
+    if (speaking) {
+      stopSpeaking();
+      setSpeaking(false);
+    } else {
+      speakText(text, lang, settings.speechRate);
+      setSpeaking(true);
+      const checkDone = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          setSpeaking(false);
+          clearInterval(checkDone);
+        }
+      }, 500);
+    }
+  }
+
+  function handleVoiceTranscript(transcript) {
+    setInput(transcript);
   }
 
   const examplePrompt = t(lang, `examples.${subject}`);
+  const fontSize = CHAT_FONT_PX[settings.chatFontSize] || "14px";
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 rounded-xl border border-slate-800">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 flex-shrink-0">
         <div className="text-sm text-slate-400 deva">💬 Chat</div>
         <button
           onClick={clearChat}
@@ -59,7 +170,11 @@ export default function ChatWindow({ subject, level, lang }) {
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
+        style={{ fontSize }}
+      >
         {messages.length === 0 && (
           <div className="text-slate-300 space-y-3 deva">
             <h2 className="text-lg font-semibold">
@@ -78,7 +193,20 @@ export default function ChatWindow({ subject, level, lang }) {
           </div>
         )}
         {messages.map((m, i) => (
-          <MessageBubble key={i} role={m.role} content={m.content} />
+          <div key={i}>
+            <MessageBubble role={m.role} content={m.content} />
+            {m.role === "assistant" && (
+              <div className="flex justify-start mt-1 ml-1">
+                <button
+                  onClick={() => handleSpeak(m.content)}
+                  className="text-xs text-slate-500 hover:text-slate-300 px-2 py-0.5 rounded hover:bg-slate-800 transition"
+                  title="Read aloud"
+                >
+                  🔊 Read aloud
+                </button>
+              </div>
+            )}
+          </div>
         ))}
         {busy && (
           <div className="text-slate-400 text-sm italic deva">
@@ -97,8 +225,9 @@ export default function ChatWindow({ subject, level, lang }) {
           e.preventDefault();
           send();
         }}
-        className="flex gap-2 p-3 border-t border-slate-800"
+        className="flex gap-2 p-3 border-t border-slate-800 flex-shrink-0"
       >
+        <VoiceButton lang={lang} onTranscript={handleVoiceTranscript} />
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
