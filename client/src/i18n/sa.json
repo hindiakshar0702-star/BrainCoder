@@ -1,0 +1,39 @@
+{
+  "appTitle": "BrainCoder",
+  "tagline": "कोडिङ्ग्-गणित-भौतिकशास्त्राणां कृते कृत्रिम-बुद्धि-गुरुः",
+  "subject": "विषयः",
+  "subjects": {
+    "coding": "कोडिङ्ग्",
+    "math": "गणितम्",
+    "physics": "भौतिकशास्त्रम्"
+  },
+  "level": "स्तरः",
+  "levels": {
+    "beginner": "प्रारम्भिकः",
+    "intermediate": "मध्यमः",
+    "advanced": "उन्नतः"
+  },
+  "language": "भाषा",
+  "languages": {
+    "en": "आङ्ग्लभाषा",
+    "hi": "हिन्दीभाषा",
+    "sa": "संस्कृतम्"
+  },
+  "askPlaceholder": "किमपि पृच्छतु… यथा 'recursion इति उदाहरणेन वर्णयतु'",
+  "send": "प्रेषयतु",
+  "thinking": "चिन्तयामि…",
+  "codeEditor": "कोड-सम्पादकः",
+  "run": "चालयतु",
+  "running": "चलति…",
+  "output": "निर्गमः",
+  "selectLang": "सम्पादक-भाषा",
+  "clearChat": "सम्भाषणं मार्जयतु",
+  "welcomeTitle": "BrainCoder इति स्वागतम्!",
+  "welcomeBody": "विषयं स्तरं भाषां च चिनुत — ततः प्रथमं प्रश्नं पृच्छतु।",
+  "exampleHeading": "एतेषु एकं प्रयतताम्:",
+  "examples": {
+    "coding": "Python भाषायां recursion इति लघुदृष्टान्तेन वर्णयतु",
+    "math": "Integration by parts इति साधितदृष्टान्तेन वर्णयतु",
+    "physics": "न्यूटनस्य द्वितीयः नियमः कः? वास्तविकं दृष्टान्तं ददतु।"
+  }
+}

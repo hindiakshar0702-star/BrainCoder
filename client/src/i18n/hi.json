@@ -1,0 +1,39 @@
+{
+  "appTitle": "BrainCoder",
+  "tagline": "Coding, गणित और भौतिकी सीखने का AI शिक्षक",
+  "subject": "विषय",
+  "subjects": {
+    "coding": "कोडिंग",
+    "math": "गणित",
+    "physics": "भौतिकी"
+  },
+  "level": "स्तर",
+  "levels": {
+    "beginner": "शुरुआती",
+    "intermediate": "मध्यम",
+    "advanced": "उन्नत"
+  },
+  "language": "भाषा",
+  "languages": {
+    "en": "अंग्रेज़ी",
+    "hi": "हिन्दी",
+    "sa": "संस्कृत"
+  },
+  "askPlaceholder": "कुछ भी पूछें… जैसे 'recursion को उदाहरण से समझाओ'",
+  "send": "भेजें",
+  "thinking": "सोच रहा हूँ…",
+  "codeEditor": "कोड एडिटर",
+  "run": "चलाएँ",
+  "running": "चल रहा है…",
+  "output": "आउटपुट",
+  "selectLang": "एडिटर भाषा",
+  "clearChat": "चैट साफ़ करें",
+  "welcomeTitle": "BrainCoder में आपका स्वागत है!",
+  "welcomeBody": "विषय, स्तर और भाषा चुनें — फिर अपना पहला प्रश्न पूछें।",
+  "exampleHeading": "इनमें से कुछ आज़माएँ:",
+  "examples": {
+    "coding": "Python में recursion को छोटे उदाहरण के साथ समझाओ",
+    "math": "Integration by parts एक हल किए हुए उदाहरण के साथ समझाओ",
+    "physics": "न्यूटन का द्वितीय नियम क्या है? एक वास्तविक उदाहरण दो।"
+  }
+}

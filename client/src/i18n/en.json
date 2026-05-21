@@ -1,0 +1,39 @@
+{
+  "appTitle": "BrainCoder",
+  "tagline": "Your AI teacher for Coding, Math & Physics",
+  "subject": "Subject",
+  "subjects": {
+    "coding": "Coding",
+    "math": "Mathematics",
+    "physics": "Physics"
+  },
+  "level": "Level",
+  "levels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "language": "Language",
+  "languages": {
+    "en": "English",
+    "hi": "Hindi",
+    "sa": "Sanskrit"
+  },
+  "askPlaceholder": "Ask anything… e.g. 'Explain recursion with an example'",
+  "send": "Send",
+  "thinking": "Thinking…",
+  "codeEditor": "Code Editor",
+  "run": "Run",
+  "running": "Running…",
+  "output": "Output",
+  "selectLang": "Editor language",
+  "clearChat": "Clear chat",
+  "welcomeTitle": "Welcome to BrainCoder!",
+  "welcomeBody": "Pick a subject, level, and language — then ask your first question.",
+  "exampleHeading": "Try one of these:",
+  "examples": {
+    "coding": "Teach me recursion in Python with a small example",
+    "math": "Explain integration by parts with a worked example",
+    "physics": "What is Newton's second law? Give a real-world example."
+  }
+}

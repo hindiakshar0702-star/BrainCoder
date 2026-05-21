@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+/* Devanagari-friendly text everywhere it's needed */
+.deva {
+  font-family: "Noto Sans Devanagari", system-ui, sans-serif;
+}
+
+/* Markdown styling */
+.prose-chat pre {
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+.prose-chat code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+.prose-chat p :not(pre) > code {
+  background: #1e293b;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  font-weight: 600;
+  margin: 0.6rem 0 0.3rem;
+}
+.prose-chat ul,
+.prose-chat ol {
+  margin-left: 1.25rem;
+  list-style: disc;
+}
+.prose-chat ol {
+  list-style: decimal;
+}
