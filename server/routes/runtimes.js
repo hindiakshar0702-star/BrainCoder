@@ -2,9 +2,9 @@ import { Router } from "express";
 
 const router = Router();
 
-const PISTON_RUNTIMES_URL = "https://emkc.org/api/v2/piston/runtimes";
+const JUDGE0_URL = "https://ce.judge0.com";
 
-// Simple in-memory cache (Piston runtimes change rarely).
+// Simple in-memory cache (language list changes rarely).
 let cache = { data: null, fetchedAt: 0 };
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -14,14 +14,26 @@ router.get("/", async (_req, res) => {
     if (cache.data && now - cache.fetchedAt < TTL_MS) {
       return res.json({ runtimes: cache.data, cached: true });
     }
-    const r = await fetch(PISTON_RUNTIMES_URL);
+
+    const r = await fetch(`${JUDGE0_URL}/languages`);
     if (!r.ok) {
       const text = await r.text();
-      return res.status(502).json({ error: `Piston error: ${text}` });
+      return res.status(502).json({ error: `Judge0 error: ${text}` });
     }
+
     const data = await r.json();
-    cache = { data, fetchedAt: now };
-    res.json({ runtimes: data, cached: false });
+
+    // Transform to a format similar to what the frontend expects
+    // Judge0 returns: [{ id: 71, name: "Python (3.8.1)" }, ...]
+    const runtimes = data.map((lang) => ({
+      language: lang.name.split("(")[0].trim().toLowerCase(),
+      version: (lang.name.match(/\(([^)]+)\)/) || [])[1] || "",
+      id: lang.id,
+      fullName: lang.name,
+    }));
+
+    cache = { data: runtimes, fetchedAt: now };
+    res.json({ runtimes, cached: false });
   } catch (err) {
     console.error("[/api/runtimes] error:", err);
     res.status(500).json({ error: err.message || "Internal server error" });
