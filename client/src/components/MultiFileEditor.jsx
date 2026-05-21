@@ -277,9 +277,9 @@ export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem,
   const totalTests = tests.filter((t) => t.passed !== null).length;
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 rounded-xl border border-slate-800">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-800 flex-wrap">
+      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-800 flex-wrap flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400 deva">📝 {t(lang, "codeEditor")}</span>
           {problemTitle && (
@@ -337,7 +337,7 @@ export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem,
       </div>
 
       {/* File tabs */}
-      <div className="flex items-center gap-1 px-3 py-1 border-b border-slate-800 bg-slate-950/50 overflow-x-auto">
+      <div className="flex items-center gap-1 px-3 py-1 border-b border-slate-800 bg-slate-950/50 overflow-x-auto flex-shrink-0">
         {files.map((file, idx) => (
           <div
             key={idx}
@@ -389,110 +389,113 @@ export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem,
         </button>
       </div>
 
-      {/* Monaco Editor */}
-      <div className="flex-1 min-h-[180px]">
-        <Editor
-          height="100%"
-          language={toMonacoLang(language)}
-          value={activeFile.content}
-          onChange={(v) => updateActiveFile(v ?? "")}
-          theme="vs-dark"
-          options={{
-            fontSize: 13,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-          }}
-        />
-      </div>
-
-      {/* Stdin */}
-      <div className="border-t border-slate-800">
-        <div className="px-4 py-1 text-xs text-slate-400 deva">📥 Input (stdin)</div>
-        <textarea
-          value={stdin}
-          onChange={(e) => setStdin(e.target.value)}
-          placeholder="Program input here (e.g. for input()/scanf)..."
-          className="w-full bg-slate-950 text-xs text-slate-200 px-4 py-2 resize-none h-[50px] placeholder:text-slate-600 focus:outline-none"
-        />
-      </div>
-
-      {/* Output + Metrics */}
-      <div className="border-t border-slate-800">
-        <div className="flex items-center justify-between px-4 py-1">
-          <span className="text-xs text-slate-400 deva">{t(lang, "output")}</span>
-          {metrics && (
-            <span className="text-xs text-slate-500">
-              ⏱ {metrics.networkMs}ms | v{metrics.version} |{" "}
-              {metrics.exitCode === 0 ? (
-                <span className="text-emerald-400">exit 0 ✓</span>
-              ) : (
-                <span className="text-red-400">exit {metrics.exitCode}</span>
-              )}
-            </span>
-          )}
+      {/* Scrollable content area: editor + stdin + output + tests */}
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+        {/* Monaco Editor (fixed reasonable height so it can coexist with scroll) */}
+        <div className="h-[320px] min-h-[280px] flex-shrink-0 border-b border-slate-800">
+          <Editor
+            height="100%"
+            language={toMonacoLang(language)}
+            value={activeFile.content}
+            onChange={(v) => updateActiveFile(v ?? "")}
+            theme="vs-dark"
+            options={{
+              fontSize: 13,
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+            }}
+          />
         </div>
-        <pre className="px-4 pb-3 text-xs text-slate-200 whitespace-pre-wrap min-h-[50px] max-h-[150px] overflow-auto">
-          {output}
-        </pre>
-      </div>
 
-      {/* Test Cases Panel */}
-      {showTests && (
-        <div className="border-t border-slate-800 px-4 py-2">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-300">
-              🎯 Test Cases{" "}
-              {totalTests > 0 && (
-                <span className={passCount === totalTests ? "text-emerald-400" : "text-orange-400"}>
-                  ({passCount}/{totalTests} passed)
-                </span>
-              )}
-            </span>
-            <div className="flex gap-2">
-              <button onClick={runTests} disabled={testBusy || tests.length === 0}
-                className="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-xs">
-                ▶ Run All
-              </button>
-              <button onClick={() => setShowTests(false)}
-                className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">
-                ✕
-              </button>
+        {/* Stdin */}
+        <div className="border-b border-slate-800 flex-shrink-0">
+          <div className="px-4 py-1 text-xs text-slate-400 deva">📥 Input (stdin)</div>
+          <textarea
+            value={stdin}
+            onChange={(e) => setStdin(e.target.value)}
+            placeholder="Program input here (e.g. for input()/scanf)..."
+            className="w-full bg-slate-950 text-xs text-slate-200 px-4 py-2 resize-none h-[60px] placeholder:text-slate-600 focus:outline-none"
+          />
+        </div>
+
+        {/* Output + Metrics */}
+        <div className="border-b border-slate-800 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-1">
+            <span className="text-xs text-slate-400 deva">{t(lang, "output")}</span>
+            {metrics && (
+              <span className="text-xs text-slate-500">
+                ⏱ {metrics.networkMs}ms | v{metrics.version} |{" "}
+                {metrics.exitCode === 0 ? (
+                  <span className="text-emerald-400">exit 0 ✓</span>
+                ) : (
+                  <span className="text-red-400">exit {metrics.exitCode}</span>
+                )}
+              </span>
+            )}
+          </div>
+          <pre className="px-4 pb-3 text-xs text-slate-200 whitespace-pre-wrap min-h-[60px] max-h-[200px] overflow-auto">
+            {output}
+          </pre>
+        </div>
+
+        {/* Test Cases Panel */}
+        {showTests && (
+          <div className="px-4 py-2 flex-shrink-0">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-300">
+                🎯 Test Cases{" "}
+                {totalTests > 0 && (
+                  <span className={passCount === totalTests ? "text-emerald-400" : "text-orange-400"}>
+                    ({passCount}/{totalTests} passed)
+                  </span>
+                )}
+              </span>
+              <div className="flex gap-2">
+                <button onClick={runTests} disabled={testBusy || tests.length === 0}
+                  className="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-xs">
+                  ▶ Run All
+                </button>
+                <button onClick={() => setShowTests(false)}
+                  className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">
+                  ✕
+                </button>
+              </div>
+            </div>
+            {testBusy && tests.length === 0 && (
+              <div className="text-xs text-slate-400 italic">AI is generating test cases...</div>
+            )}
+            <div className="space-y-1">
+              {tests.map((tc, i) => (
+                <div key={i}
+                  className={`text-xs px-2 py-1 rounded border ${
+                    tc.passed === true ? "border-emerald-700 bg-emerald-950/40"
+                    : tc.passed === false ? "border-red-700 bg-red-950/40"
+                    : "border-slate-700 bg-slate-800"
+                  }`}>
+                  <div className="flex items-center gap-2">
+                    <span>{tc.passed === true ? "✅" : tc.passed === false ? "❌" : "⬜"}</span>
+                    <span className="font-medium">{tc.description}</span>
+                  </div>
+                  {tc.stdin && (
+                    <div className="text-slate-400 ml-6">
+                      stdin: <code className="text-slate-300">{tc.stdin}</code>
+                    </div>
+                  )}
+                  <div className="text-slate-400 ml-6">
+                    expected: <code className="text-slate-300">{tc.expected}</code>
+                  </div>
+                  {tc.result !== null && (
+                    <div className="text-slate-400 ml-6">
+                      got: <code className={tc.passed ? "text-emerald-300" : "text-red-300"}>{tc.result}</code>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-          {testBusy && tests.length === 0 && (
-            <div className="text-xs text-slate-400 italic">AI is generating test cases...</div>
-          )}
-          <div className="space-y-1 max-h-[150px] overflow-auto">
-            {tests.map((tc, i) => (
-              <div key={i}
-                className={`text-xs px-2 py-1 rounded border ${
-                  tc.passed === true ? "border-emerald-700 bg-emerald-950/40"
-                  : tc.passed === false ? "border-red-700 bg-red-950/40"
-                  : "border-slate-700 bg-slate-800"
-                }`}>
-                <div className="flex items-center gap-2">
-                  <span>{tc.passed === true ? "✅" : tc.passed === false ? "❌" : "⬜"}</span>
-                  <span className="font-medium">{tc.description}</span>
-                </div>
-                {tc.stdin && (
-                  <div className="text-slate-400 ml-6">
-                    stdin: <code className="text-slate-300">{tc.stdin}</code>
-                  </div>
-                )}
-                <div className="text-slate-400 ml-6">
-                  expected: <code className="text-slate-300">{tc.expected}</code>
-                </div>
-                {tc.result !== null && (
-                  <div className="text-slate-400 ml-6">
-                    got: <code className={tc.passed ? "text-emerald-300" : "text-red-300"}>{tc.result}</code>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -88,8 +88,8 @@ export default function ChatWindow({
   const examplePrompt = t(lang, `examples.${subject}`);
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 rounded-xl border border-slate-800">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 flex-shrink-0">
         <div className="text-sm text-slate-400 deva">💬 Chat</div>
         <button
           onClick={clearChat}
@@ -99,7 +99,7 @@ export default function ChatWindow({
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
         {messages.length === 0 && (
           <div className="text-slate-300 space-y-3 deva">
             <h2 className="text-lg font-semibold">
@@ -151,7 +151,7 @@ export default function ChatWindow({
           e.preventDefault();
           send();
         }}
-        className="flex gap-2 p-3 border-t border-slate-800"
+        className="flex gap-2 p-3 border-t border-slate-800 flex-shrink-0"
       >
         <VoiceButton lang={lang} onTranscript={handleVoiceTranscript} />
         <input

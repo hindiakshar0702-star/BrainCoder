@@ -35,9 +35,9 @@ export default function App() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="px-6 py-3 border-b border-slate-800 bg-slate-950">
+      <header className="px-6 py-3 border-b border-slate-800 bg-slate-950 flex-shrink-0">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div className="text-2xl font-bold tracking-tight">
@@ -78,7 +78,7 @@ export default function App() {
 
       {/* Practice Problems Panel (collapsible) */}
       {showProblems && (
-        <div className="border-b border-slate-800 bg-slate-950/80">
+        <div className="border-b border-slate-800 bg-slate-950/80 flex-shrink-0 max-h-[40vh] overflow-y-auto">
           <PracticeProblems
             subject={subject}
             level={level}
@@ -89,21 +89,25 @@ export default function App() {
       )}
 
       {/* Main split: chat (left) + code runner (right) */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 min-h-0">
-        <ChatWindow
-          subject={subject}
-          level={level}
-          lang={lang}
-          injectedPrompt={injectedPrompt}
-          onInjectedHandled={() => setInjectedPrompt(null)}
-        />
-        <MultiFileEditor
-          lang={lang}
-          onExplain={handleExplain}
-          onFix={handleFix}
-          loadedProblem={loadedProblem}
-          onProblemLoaded={() => setLoadedProblem(null)}
-        />
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 min-h-0 overflow-hidden">
+        <div className="min-h-0 h-full overflow-hidden">
+          <ChatWindow
+            subject={subject}
+            level={level}
+            lang={lang}
+            injectedPrompt={injectedPrompt}
+            onInjectedHandled={() => setInjectedPrompt(null)}
+          />
+        </div>
+        <div className="min-h-0 h-full overflow-hidden">
+          <MultiFileEditor
+            lang={lang}
+            onExplain={handleExplain}
+            onFix={handleFix}
+            loadedProblem={loadedProblem}
+            onProblemLoaded={() => setLoadedProblem(null)}
+          />
+        </div>
       </main>
     </div>
   );

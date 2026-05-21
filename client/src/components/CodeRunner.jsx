@@ -247,9 +247,9 @@ export default function CodeRunner({ lang, onExplain, onFix, loadedProblem, onPr
   const totalTests = tests.filter((t) => t.passed !== null).length;
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 rounded-xl border border-slate-800">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
       {/* Header toolbar */}
-      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-800 flex-wrap">
+      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-800 flex-wrap flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400 deva">
             📝 {t(lang, "codeEditor")}
