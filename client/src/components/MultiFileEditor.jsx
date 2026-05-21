@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { runCode, getRuntimes, generateTests } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
-import { useSettings } from "../lib/settings.js";
+import { useSettings } from "../lib/settings.jsx";
 
 // Popular languages shown first
 const POPULAR = [

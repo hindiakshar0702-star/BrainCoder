@@ -3,7 +3,7 @@ import MessageBubble from "./MessageBubble.jsx";
 import VoiceButton, { speakText, stopSpeaking } from "./VoiceButton.jsx";
 import { sendChat } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
-import { useSettings, CHAT_FONT_PX } from "../lib/settings.js";
+import { useSettings, CHAT_FONT_PX } from "../lib/settings.jsx";
 
 const HISTORY_KEY = "braincoder.chatHistory";
 

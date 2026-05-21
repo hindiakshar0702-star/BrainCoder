@@ -7,7 +7,7 @@ import MultiFileEditor from "./components/MultiFileEditor.jsx";
 import PracticeProblems from "./components/PracticeProblems.jsx";
 import CodeLangSelector from "./components/CodeLangSelector.jsx";
 import SettingsModal from "./components/SettingsModal.jsx";
-import { useSettings } from "./lib/settings.js";
+import { useSettings } from "./lib/settings.jsx";
 import { t } from "./lib/i18n.js";
 
 export default function App() {

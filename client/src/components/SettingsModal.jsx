@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSettings } from "../lib/settings.js";
+import { useSettings } from "../lib/settings.jsx";
 
 /**
  * Settings modal with the Top 10 essentials.
