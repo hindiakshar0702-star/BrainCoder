@@ -1,10 +1,24 @@
 // Thin API client for the BrainCoder backend.
 
-export async function sendChat({ messages, subject, level, language, codeLang }) {
+export async function sendChat({
+  messages,
+  subject,
+  level,
+  language,
+  codeLang,
+  userApiKey,
+}) {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, subject, level, language, codeLang }),
+    body: JSON.stringify({
+      messages,
+      subject,
+      level,
+      language,
+      codeLang,
+      userApiKey,
+    }),
   });
   if (!res.ok) {
     const { error } = await res.json().catch(() => ({}));
@@ -22,9 +36,7 @@ export async function runCode({
   files,
 }) {
   const body = { language, version, code, stdin, args };
-  if (files && files.length > 0) {
-    body.files = files;
-  }
+  if (files && files.length > 0) body.files = files;
   const res = await fetch("/api/run", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -35,7 +47,6 @@ export async function runCode({
     throw new Error(error || `Run failed (${res.status})`);
   }
   return res.json();
-  // { stdout, stderr, output, exitCode, signal, compile, language, version, networkMs }
 }
 
 export async function getRuntimes() {
@@ -44,18 +55,18 @@ export async function getRuntimes() {
     const { error } = await res.json().catch(() => ({}));
     throw new Error(error || `Runtimes fetch failed (${res.status})`);
   }
-  return res.json(); // { runtimes: [...], cached }
+  return res.json();
 }
 
-export async function generateTests({ language, code, count = 4 }) {
+export async function generateTests({ language, code, count = 4, userApiKey }) {
   const res = await fetch("/api/generate-tests", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ language, code, count }),
+    body: JSON.stringify({ language, code, count, userApiKey }),
   });
   if (!res.ok) {
     const { error } = await res.json().catch(() => ({}));
     throw new Error(error || `Generate tests failed (${res.status})`);
   }
-  return res.json(); // { tests: [{ stdin, expected, description }] }
+  return res.json();
 }

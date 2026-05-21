@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { runCode, getRuntimes, generateTests } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
+import { useSettings } from "../lib/settings.js";
 
 // Popular languages shown first
 const POPULAR = [
@@ -69,6 +70,7 @@ function defaultExt(lang) {
 }
 
 export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem, onProblemLoaded, pendingCode, onCodeLoaded }) {
+  const { settings } = useSettings();
   const [language, setLanguage] = useState("python");
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState("*");
@@ -266,6 +268,7 @@ export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem,
         language,
         code: files[0].content,
         count: 4,
+        userApiKey: settings.userApiKey,
       });
       setTests(generated.map((t) => ({ ...t, result: null, passed: null })));
     } catch (e) {
@@ -422,9 +425,11 @@ export default function MultiFileEditor({ lang, onExplain, onFix, loadedProblem,
             language={toMonacoLang(language)}
             value={activeFile.content}
             onChange={(v) => updateActiveFile(v ?? "")}
-            theme="vs-dark"
+            theme={settings.editorTheme}
             options={{
-              fontSize: 13,
+              fontSize: settings.editorFontSize,
+              tabSize: settings.tabSize,
+              insertSpaces: true,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               automaticLayout: true,

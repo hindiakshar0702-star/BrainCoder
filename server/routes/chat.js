@@ -12,11 +12,14 @@ router.post("/", async (req, res) => {
       level = "beginner",
       language = "en",
       codeLang = "python",
+      userApiKey,
     } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = (userApiKey && userApiKey.trim()) || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
       return res.status(500).json({
-        error: "GEMINI_API_KEY is not configured on the server.",
+        error:
+          "No Gemini API key available. Set GEMINI_API_KEY on the server or paste your own key in Settings → BYOK.",
       });
     }
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -38,7 +41,7 @@ router.post("/", async (req, res) => {
     const last = messages[messages.length - 1];
 
     const { result, modelUsed } = await callGeminiWithFallback({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey,
       systemInstruction,
       run: async (model) => {
         const chat = model.startChat({ history });

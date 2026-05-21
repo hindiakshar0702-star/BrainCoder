@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SubjectSelector from "./components/SubjectSelector.jsx";
 import LevelSelector from "./components/LevelSelector.jsx";
 import LanguageSelector from "./components/LanguageSelector.jsx";
@@ -6,21 +6,52 @@ import ChatWindow from "./components/ChatWindow.jsx";
 import MultiFileEditor from "./components/MultiFileEditor.jsx";
 import PracticeProblems from "./components/PracticeProblems.jsx";
 import CodeLangSelector from "./components/CodeLangSelector.jsx";
+import SettingsModal from "./components/SettingsModal.jsx";
+import { useSettings } from "./lib/settings.js";
 import { t } from "./lib/i18n.js";
 
 export default function App() {
-  const [subject, setSubject] = useState("coding");
-  const [level, setLevel] = useState("beginner");
-  const [lang, setLang] = useState("en");
-  const [codeLang, setCodeLang] = useState("python");
+  const { settings } = useSettings();
+
+  // Initialize from saved defaults the first time
+  const [subject, setSubject] = useState(settings.defaults.subject);
+  const [level, setLevel] = useState(settings.defaults.level);
+  const [lang, setLang] = useState(settings.defaults.lang);
+  const [codeLang, setCodeLang] = useState(settings.defaults.codeLang);
   const [showProblems, setShowProblems] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // If saved defaults change (e.g. user toggles in settings), update once
+  useEffect(() => {
+    setSubject(settings.defaults.subject);
+    setLevel(settings.defaults.level);
+    setLang(settings.defaults.lang);
+    setCodeLang(settings.defaults.codeLang);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    settings.defaults.subject,
+    settings.defaults.level,
+    settings.defaults.lang,
+    settings.defaults.codeLang,
+  ]);
+
+  // Esc opens/closes settings
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "Escape" && showSettings) setShowSettings(false);
+      if ((e.ctrlKey || e.metaKey) && e.key === ",") {
+        e.preventDefault();
+        setShowSettings(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [showSettings]);
 
   // Injected prompts from CodeRunner -> ChatWindow
   const [injectedPrompt, setInjectedPrompt] = useState(null);
-
   // Code loaded from chat -> editor
   const [pendingCode, setPendingCode] = useState(null);
-
   // Problem loaded into editor
   const [loadedProblem, setLoadedProblem] = useState(null);
 
@@ -39,7 +70,6 @@ export default function App() {
     setShowProblems(false);
   }
 
-  // Called when user clicks "Load to Editor" on a code block in chat
   function handleLoadCode(code, language) {
     setPendingCode({ code, language });
   }
@@ -71,13 +101,11 @@ export default function App() {
             <div className="min-w-[180px]">
               <LanguageSelector value={lang} onChange={setLang} />
             </div>
-            {/* Code language selector — only meaningful for math/physics */}
             {(subject === "math" || subject === "physics") && (
               <div className="min-w-[160px]">
                 <CodeLangSelector value={codeLang} onChange={setCodeLang} />
               </div>
             )}
-            {/* Practice Problems toggle */}
             <button
               onClick={() => setShowProblems(!showProblems)}
               className={`px-3 py-2 rounded-lg border text-sm transition ${
@@ -87,6 +115,13 @@ export default function App() {
               }`}
             >
               📚 Practice
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="px-3 py-2 rounded-lg border bg-slate-800 border-slate-700 hover:bg-slate-700 text-sm"
+              title="Settings (Ctrl+,)"
+            >
+              ⚙️
             </button>
           </div>
         </div>
@@ -129,6 +164,12 @@ export default function App() {
           />
         </div>
       </main>
+
+      {/* Settings modal */}
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   );
 }

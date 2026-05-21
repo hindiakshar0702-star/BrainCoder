@@ -79,7 +79,7 @@ export default function VoiceButton({ lang, onTranscript }) {
  * Speak text aloud using SpeechSynthesis.
  * Call this function with the AI reply text.
  */
-export function speakText(text, lang = "en") {
+export function speakText(text, lang = "en", rate = 0.9) {
   if (!window.speechSynthesis) return;
 
   // Stop any ongoing speech
@@ -96,7 +96,7 @@ export function speakText(text, lang = "en") {
 
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = SPEECH_LANG_MAP[lang] || "en-US";
-  utterance.rate = 0.9;
+  utterance.rate = rate;
   utterance.pitch = 1;
 
   // Try to find a matching voice

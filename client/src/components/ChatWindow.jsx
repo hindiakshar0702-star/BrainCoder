@@ -3,8 +3,10 @@ import MessageBubble from "./MessageBubble.jsx";
 import VoiceButton, { speakText, stopSpeaking } from "./VoiceButton.jsx";
 import { sendChat } from "../lib/api.js";
 import { t } from "../lib/i18n.js";
+import { useSettings, CHAT_FONT_PX } from "../lib/settings.js";
 
-// Map markdown language tags to internal language names
+const HISTORY_KEY = "braincoder.chatHistory";
+
 const LANG_NORMALIZE = {
   cpp: "c++", "c++": "c++", cxx: "c++", cc: "c++", c: "c",
   py: "python", python: "python", python3: "python",
@@ -20,10 +22,6 @@ const LANG_NORMALIZE = {
   perl: "perl", pl: "perl", scala: "scala", dart: "dart",
 };
 
-/**
- * Pull the first fenced code block (with a language tag) from a markdown string.
- * Returns { code, language } or null if none.
- */
 function extractFirstCodeBlock(markdown) {
   if (!markdown) return null;
   const re = /```([\w+#-]+)?\s*\n([\s\S]*?)\n```/;
@@ -44,12 +42,40 @@ export default function ChatWindow({
   onInjectedHandled,
   onLoadCode,
 }) {
-  const [messages, setMessages] = useState([]);
+  const { settings } = useSettings();
+
+  // Load saved history on mount if enabled
+  const [messages, setMessages] = useState(() => {
+    if (!settings.saveHistory) return [];
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const scrollRef = useRef(null);
+
+  // Persist messages whenever they change (if enabled)
+  useEffect(() => {
+    if (!settings.saveHistory) return;
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(messages));
+    } catch {}
+  }, [messages, settings.saveHistory]);
+
+  // If user disables saveHistory in settings, wipe stored history
+  useEffect(() => {
+    if (!settings.saveHistory) {
+      try {
+        localStorage.removeItem(HISTORY_KEY);
+      } catch {}
+    }
+  }, [settings.saveHistory]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -58,7 +84,6 @@ export default function ChatWindow({
     });
   }, [messages, busy]);
 
-  // Handle injected prompts from CodeRunner (Explain / Fix)
   useEffect(() => {
     if (injectedPrompt) {
       send(injectedPrompt);
@@ -82,13 +107,16 @@ export default function ChatWindow({
         level,
         language: lang,
         codeLang,
+        userApiKey: settings.userApiKey,
       });
       setMessages([...next, { role: "assistant", content: reply }]);
 
-      // 🚀 Auto-load: extract first code block from reply and send it to the editor
-      const block = extractFirstCodeBlock(reply);
-      if (block && onLoadCode) {
-        onLoadCode(block.code, block.language);
+      // Auto-load first code block to editor (if enabled)
+      if (settings.autoLoadCode) {
+        const block = extractFirstCodeBlock(reply);
+        if (block && onLoadCode) {
+          onLoadCode(block.code, block.language);
+        }
       }
     } catch (e) {
       setError(e.message);
@@ -102,6 +130,9 @@ export default function ChatWindow({
     setError("");
     stopSpeaking();
     setSpeaking(false);
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+    } catch {}
   }
 
   function handleSpeak(text) {
@@ -109,7 +140,7 @@ export default function ChatWindow({
       stopSpeaking();
       setSpeaking(false);
     } else {
-      speakText(text, lang);
+      speakText(text, lang, settings.speechRate);
       setSpeaking(true);
       const checkDone = setInterval(() => {
         if (!window.speechSynthesis.speaking) {
@@ -125,6 +156,7 @@ export default function ChatWindow({
   }
 
   const examplePrompt = t(lang, `examples.${subject}`);
+  const fontSize = CHAT_FONT_PX[settings.chatFontSize] || "14px";
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
@@ -138,7 +170,11 @@ export default function ChatWindow({
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
+        style={{ fontSize }}
+      >
         {messages.length === 0 && (
           <div className="text-slate-300 space-y-3 deva">
             <h2 className="text-lg font-semibold">
@@ -159,7 +195,6 @@ export default function ChatWindow({
         {messages.map((m, i) => (
           <div key={i}>
             <MessageBubble role={m.role} content={m.content} />
-            {/* Read aloud button on AI messages */}
             {m.role === "assistant" && (
               <div className="flex justify-start mt-1 ml-1">
                 <button

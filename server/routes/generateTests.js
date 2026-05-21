@@ -5,11 +5,12 @@ const router = Router();
 
 router.post("/", async (req, res) => {
   try {
-    const { language = "python", code = "", count = 4 } = req.body;
-    if (!process.env.GEMINI_API_KEY) {
+    const { language = "python", code = "", count = 4, userApiKey } = req.body;
+    const apiKey = (userApiKey && userApiKey.trim()) || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
       return res
         .status(500)
-        .json({ error: "GEMINI_API_KEY is not configured." });
+        .json({ error: "No Gemini API key. Set GEMINI_API_KEY or use BYOK in Settings." });
     }
     if (!code.trim()) {
       return res.status(400).json({ error: "code is required" });
@@ -34,7 +35,7 @@ ${code}
 \`\`\``;
 
     const result = await callGeminiWithFallback({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey,
       generationConfig: { responseMimeType: "application/json" },
       run: (model) => model.generateContent(prompt),
     });
