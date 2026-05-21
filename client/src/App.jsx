@@ -5,12 +5,14 @@ import LanguageSelector from "./components/LanguageSelector.jsx";
 import ChatWindow from "./components/ChatWindow.jsx";
 import MultiFileEditor from "./components/MultiFileEditor.jsx";
 import PracticeProblems from "./components/PracticeProblems.jsx";
+import CodeLangSelector from "./components/CodeLangSelector.jsx";
 import { t } from "./lib/i18n.js";
 
 export default function App() {
   const [subject, setSubject] = useState("coding");
   const [level, setLevel] = useState("beginner");
   const [lang, setLang] = useState("en");
+  const [codeLang, setCodeLang] = useState("python");
   const [showProblems, setShowProblems] = useState(false);
 
   // Injected prompts from CodeRunner -> ChatWindow
@@ -69,6 +71,12 @@ export default function App() {
             <div className="min-w-[180px]">
               <LanguageSelector value={lang} onChange={setLang} />
             </div>
+            {/* Code language selector — only meaningful for math/physics */}
+            {(subject === "math" || subject === "physics") && (
+              <div className="min-w-[160px]">
+                <CodeLangSelector value={codeLang} onChange={setCodeLang} />
+              </div>
+            )}
             {/* Practice Problems toggle */}
             <button
               onClick={() => setShowProblems(!showProblems)}
@@ -103,6 +111,7 @@ export default function App() {
             subject={subject}
             level={level}
             lang={lang}
+            codeLang={codeLang}
             injectedPrompt={injectedPrompt}
             onInjectedHandled={() => setInjectedPrompt(null)}
             onLoadCode={handleLoadCode}

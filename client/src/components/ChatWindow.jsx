@@ -8,6 +8,7 @@ export default function ChatWindow({
   subject,
   level,
   lang,
+  codeLang,
   injectedPrompt,
   onInjectedHandled,
   onLoadCode,
@@ -49,6 +50,7 @@ export default function ChatWindow({
         subject,
         level,
         language: lang,
+        codeLang,
       });
       setMessages([...next, { role: "assistant", content: reply }]);
     } catch (e) {

@@ -1,10 +1,10 @@
 // Thin API client for the BrainCoder backend.
 
-export async function sendChat({ messages, subject, level, language }) {
+export async function sendChat({ messages, subject, level, language, codeLang }) {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, subject, level, language }),
+    body: JSON.stringify({ messages, subject, level, language, codeLang }),
   });
   if (!res.ok) {
     const { error } = await res.json().catch(() => ({}));

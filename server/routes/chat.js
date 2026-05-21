@@ -11,6 +11,7 @@ router.post("/", async (req, res) => {
       subject = "coding",
       level = "beginner",
       language = "en",
+      codeLang = "python",
     } = req.body;
 
     if (!process.env.GEMINI_API_KEY) {
@@ -22,7 +23,12 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "messages[] is required." });
     }
 
-    const systemInstruction = buildSystemPrompt({ subject, level, language });
+    const systemInstruction = buildSystemPrompt({
+      subject,
+      level,
+      language,
+      codeLang,
+    });
 
     // Convert app messages -> Gemini history format.
     const history = messages.slice(0, -1).map((m) => ({
